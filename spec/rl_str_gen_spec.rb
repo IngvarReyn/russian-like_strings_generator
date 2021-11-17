@@ -8,9 +8,9 @@ describe "rl_str_gen" do
     end
   end
 
-  it "should not contain latin letters, digits or underlines" do
+  it "should contain only valid symbols" do
     1000.times do
-      expect(rl_str_gen.match? /\w/).to be false
+      expect(rl_str_gen.match? /[^а-яё -,\.:!\?\"\';]/i).to be false
     end
   end
 
@@ -53,6 +53,12 @@ describe "rl_str_gen" do
   end
 
   it "should not allow unwanted symbols inside words" do
-
+    1000.times do
+      expect(rl_str_gen.match? /[а-яё-][^а-яё -]+[а-яё-]/).to be false
+    end
   end
+
+  it "should not allow multiple dashes" do
+  end
+
 end

@@ -10,7 +10,7 @@ describe "rl_str_gen" do
 
   it "should contain only valid symbols" do
     1000.times do
-      expect(rl_str_gen.match? /[^а-яё \-,\.:!\?\"\';]/i).to be false
+      expect(rl_str_gen.match /[^а-яё \-,\.:!\?\";]/i).to be_nil
     end
   end
 
@@ -24,7 +24,7 @@ describe "rl_str_gen" do
     1000.times do
       str = rl_str_gen
       expect(str.size).to be <= 300
-      expect(str.gsub("- ", "").match?(/\A(?:[^ ]+ ){1,14}[^ ]+\z/)).to be true
+      expect(str.gsub("- ", "").match?(/\A *(?:[^ ]+ +){1,14}[^ ]+ *\z/)).to be true
     end
   end
 
@@ -38,7 +38,7 @@ describe "rl_str_gen" do
   it "should allow only particular signs after words within sentence" do
     1000.times do
       within = rl_str_gen.split.reject { |el| el == "-" }[0..-2]
-      expect(within.reject { |el| el.match? /[а-яё][\'\"]?[,:;]?\z/i }
+      expect(within.reject { |el| el.match? /[а-яё]\"?[,:;]?\z/i }
                    .size)
                    .to eq(0)
     end
@@ -46,24 +46,61 @@ describe "rl_str_gen" do
 
   it "should allow omly particular signs in the end of the sentence" do
     1000.times do
-      expect(rl_str_gen.match? /.*[а-яё]+[\'\"]?(\.|!|\?|!?|\.\.\.)\z/)
+      expect(rl_str_gen.match? /.*[а-яё]+\"?(\.|!|\?|!?|\.\.\.)\z/)
                               .to be true
     end
   end
 
   it "should not allow unwanted symbols inside words" do
     1000.times do
-      expect(rl_str_gen.match? /[а-яё-][^а-яё -]+[а-яё-]/).to be false
+      expect(rl_str_gen.match /[а-яё-][^а-яё -]+[а-яё-]/).to be_nil
     end
   end
 
-  it "should not allow multiple dashes" do
+  it "should not allow multiple punctuation marks" do
+    1000.times do
+      expect(rl_str_gen.match(/([^а-яё\.]) *\1/i)).to be_nil
+    end
   end
 
   it "should exclude unwanted symbols before words" do
     1000.times do
-    expect(rl_str_gen.match? /(?<![а-яё])[^ \'\"а-яё]+\b[а-яё]/i).to be false
+    expect(rl_str_gen.match /(?<![а-яё])[^ \"а-яё]+\b[а-яё]/i).to be_nil
     end
   end
+
+  it "should correctly use quotation marks" do
+    1000.times do
+      str = rl_str_gen
+      expect(str.scan(/\"/).size.even?).to be true
+      expect(str.scan(/\".+?\"/)
+                .reject { |el| el.match? /\"[а-яё].+[а-яё]\"/i }
+                .size)
+                .to eq(0)
+    end
+  end
+
+  it "should not allow words starting with ь,ъ,ы" do
+  end
+
+  it "should not contain capital letters inside words if not an acronim" do
+  end
+
+  it "should always have vowel after й at the beginning of the word" do
+  end
+
+  it "should not allow more than 4 consonant letters in a row" do
+  end
+
+  it "should not allow more than 2 vowel letters in a row" do
+  end
+
+  it "should not allow more than 2 same consonant letters in a row" do
+  end
+
+  it "should contain vowels if more than one letter and not an acronym" do
+  end
+
+
 
 end

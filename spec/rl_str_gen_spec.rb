@@ -53,7 +53,7 @@ describe "rl_str_gen" do
 
   it "should not allow unwanted symbols inside words" do
     1000.times do
-      expect(rl_str_gen.match /[а-яё-][^а-яё -]+[а-яё-]/).to be_nil
+      expect(rl_str_gen.match /[а-яё-][^а-яё -]+[а-яё-]/i).to be_nil
     end
   end
 
@@ -81,12 +81,61 @@ describe "rl_str_gen" do
   end
 
   it "should not allow words starting with ь,ъ,ы" do
+    1000.times do
+      expect(rl_str_gen.match /\b[ьъы]/i).to be_nil
+    end
   end
 
   it "should not contain capital letters inside words if not an acronim" do
+    1000.times do
+      words = rl_str_gen.gsub(/[^а-яё ]/i, "").split
+      words.each do |el|
+        unless el.match? /\A[А-ЯЁ]{2,}\z/
+          expect(el.match /\A.+[А-ЯЁ]/).to be_nil
+        end
+      end
+    end
+  end
+
+  it "should allow acronims only to 5 letters long" do
+    1000.times do
+      acr = rl_str_gen.gsub(/[^а-яё ]/i, "").scan(/[А-ЯЁ]{2,}/)
+      expect(acr.count { |a| a.size > 5 }).to eq(0)
+    end
+  end
+
+  it "should not allow one-letter words with a capital letter" do
+    1000.times do
+      expect(rl_str_gen.match(/ \"?[А-ЯЁ]\b/)).to be_nil
+    end
   end
 
   it "should always have vowel after й at the beginning of the word" do
+    1000.times do
+      expect(rl_str_gen.match /\bй[^ео]/i).to be_nil
+    end
+  end
+
+  it "should allow only particular letters after й inside words" do
+    1000.times do
+      expect(rl_str_gen.match /\Bй[^ьъыёуиаэюяжй]/i).to be_nil
+      # проходят запятые
+    end
+  end
+
+  it "should always be vowel in 2- and 3- letter words" do
+    1000.times do
+      rl_str_gen.gsub(/[^а-яё ]/i, "")
+                .split
+                .select { |el| el.size == 2 or el.size == 3}
+                .reject { |el| el.match?(/\A[А-ЯЁ]+\z/)}
+      .each do |word|
+        expect(word).to match(/[аоуэыияёюй]/i)
+      end
+    end
+  end
+
+  it "should allow only particular one-letter words" do
   end
 
   it "should not allow more than 4 consonant letters in a row" do
@@ -101,6 +150,7 @@ describe "rl_str_gen" do
   it "should contain vowels if more than one letter and not an acronym" do
   end
 
-
+  it "should start with a capital letter" do
+  end
 
 end

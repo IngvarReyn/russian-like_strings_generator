@@ -155,7 +155,7 @@ describe "method rl_str_gen" do
   it "should allow only particular one-letter words" do
     1000.times do
       rl_str_gen.scan(/\b[а-яё]\b/i).each do |word|
-        expect(word).to match(/[явуоиксжб]/i)
+        expect(word).to match(/[аявуоикс]/i)
       end
     end
   end
@@ -238,7 +238,7 @@ describe "method rl_str_gen" do
   end
 
 
-  it "sould not allow a vowel at the begining of the word"\
+  it "should not allow a vowel at the begining of the word"\
    "in single-syllable words if they have 3 or more letters" do
     1000.times do
     rl_str_gen.gsub(/[^а-яё -]/i, "")

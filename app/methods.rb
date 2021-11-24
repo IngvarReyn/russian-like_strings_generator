@@ -1,16 +1,3 @@
-def provide_distribution(hash)
-  sample_array = []
-
-  hash.each_key do |k|
-    hash[k].times do
-      sample_array << k
-    end
-  end
-  sample_array.freeze
-  sample_array
-end
-
-
 LETTERS_FREQ = { 1072 => 801,
                  1073 => 159,
                  1074 => 454,
@@ -57,18 +44,40 @@ ONE_LETTER_WORDS_FREQ = { 1080 => 358,
                           1086 => 34
                          }.freeze
 
+VOWELS     = [1072, 1077, 1080, 1086, 1091, 1099, 1101, 1102, 1103, 1105]
+
+CONSONANTS = [*1073..1076,1078,1079,*1081..1085,*1087..1090,*1092..1097]
+
+
+def provide_distribution(hash)
+  sample_array = []
+
+  hash.each_key do |k|
+    hash[k].times do
+      sample_array << k
+    end
+  end
+  sample_array.freeze
+  sample_array
+end
+
+
+def select_letters(arr)
+  LETTERS_FREQ.select { |k,v| arr.any?(k) }
+end
 
 
 ONE_LETTER_WORDS_PROBABILITY_ARRAY = provide_distribution(ONE_LETTER_WORDS_FREQ)
 
+VOWELS_PROBABILITY_ARRAY      = provide_distribution(select_letters(VOWELS))
 
-LETTERS_PROBABILITY_ARRAY = provide_distribution(LETTERS_FREQ)
+CONSONANTS_PROBABILITY_ARRAY  = provide_distribution(select_letters(CONSONANTS))
 
-
+######################################
 
 
 def rl_str_gen          # russin-like strings generator
-
+  words_gen(plane_words).map { |a| a << 32 }.flatten[0..-2].pack("U*")
 end
 
 
@@ -120,6 +129,9 @@ end
 
 
 def words_gen(arr)
+  #получаем массив с хешами, где описаны свойства будущих слов.
+  #согласно этим условиям создаем производный  массив где каждый элемент
+  #является массивом с интеджерами, который в будущем станем словом
   arr.map do |el|
     case el[:case]
       when :acronim
@@ -155,7 +167,7 @@ def make_common_word(hash)
   if hash[:multi_syllable]
     word = generate_multi_syllable_word
   elsif hash[:one_letter]
-    word = ONE_LETTER_WORDS_PROBABILITY_ARRAY.sample
+    word = [ONE_LETTER_WORDS_PROBABILITY_ARRAY.sample]
   else
     word = generate_single_syllable_word
   end
@@ -166,8 +178,45 @@ def make_common_word(hash)
 end
 
 
-def generate_single_syllable_word       # 6 letters max
+def generate_single_syllable_word
   length = rand(20) < 15 ? rand(2..4) : rand(5..6)
-  vowel  = [1072, 1086, 1091, 1101, 1099, 1080, 1103, 1077, 1105, 1102].sample
+  vowel  = VOWELS_PROBABILITY_ARRAY.sample
+  word   = Array.new(length)
+
+  case length
+  when 2
+    word[rand(2)] = vowel
+  when 3, 4
+    word[rand(1..2)] = vowel
+  when 5, 6
+    word[-2] = vowel
+  end
+
+  word.map! { |el| el ? el : CONSONANTS_PROBABILITY_ARRAY.sample }
+
+  word = manage_y_soft(word)
+
+  occasionaly_add_softning_sign(word)
+end
+
+
+def occasionaly_add_softning_sign(arr)
+  arr
   
+end
+
+
+def manage_y_soft(arr)
+  arr
+  
+end
+
+
+def add_dash(arr)
+  arr
+  
+end
+
+def generate_multi_syllable_word
+    generate_single_syllable_word + generate_single_syllable_word
 end

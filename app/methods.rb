@@ -99,10 +99,10 @@ def plane_words
   arr = Array.new(rand(2..15)) { {} }
 
   arr.each do |el|
-    case rand(10)
+    case rand(20)
       when 0
         el[:case] = :acronim
-      when 1
+      when 1, 2
         el[:case] = :capital
       else
         el[:case] = :downcase
@@ -194,9 +194,22 @@ def generate_single_syllable_word
 
   word.map! { |el| el ? el : CONSONANTS_PROBABILITY_ARRAY.sample }
 
-  word = manage_y_soft(word)
+  finalize_word(word)
+end
+
+
+def finalize_word(word)
+  word = check_same_consonants(word)
+
+  word = manage_y_short(word)
 
   occasionaly_add_softning_sign(word)
+end
+
+
+def check_same_consonants(arr)
+  arr
+  
 end
 
 
@@ -206,16 +219,50 @@ def occasionaly_add_softning_sign(arr)
 end
 
 
-def manage_y_soft(arr)
+def manage_y_short(arr)
   arr
   
 end
 
 
+# insert не подходит если
+#слева три согл
+#элемент - Ь
+#слева и справа два согл
+#этот и два след согл
 def add_dash(arr)
-  arr
-  
+  return arr if arr.size < 5 or arr.size > 14
+
+  vowel_indexes = []
+
+  arr.each_with_index do |el,i|
+    vowel_indexes << i if VOWELS.any?(el)
+  end
+
+  dash_zone_borders =
+    [
+     vowel_indexes[0] == 0 ? 2 : vowel_indexes[0] + 1,
+     vowel_indexes[-1] == arr.size-1 ? vowel_indexes[-1] - 1 : vowel_indexes[-1]
+    ]
+
+    (dash_zone_borders[0]..dash_zone_borders[-1]).map { |i|
+      next if arr[i] == 1100
+       }
+arr
 end
+
+
+def get_no_insert_range(arr)
+  no_insert  = []
+  consonants = 0
+  
+  arr.each_with_index do |el,i|
+    VOWELS.any?(el) ? consonants = 0 : consonants += 1
+    no_insert << ((i-3)..(i+1)) if consonants == 4
+  end
+  no_insert  
+end
+
 
 def generate_multi_syllable_word
     generate_single_syllable_word + generate_single_syllable_word

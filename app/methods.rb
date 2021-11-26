@@ -77,21 +77,9 @@ CONSONANTS_PROBABILITY_ARRAY  = provide_distribution(select_letters(CONSONANTS))
 
 
 def rl_str_gen          # russin-like strings generator
-  words_gen(plane_words).map { |a| a << 32 }.flatten[0..-2].pack("U*")
-end
-
-
-def base_string
-  x   = [*1040..1103, 1105, 1025]
-  arr = Array.new(rand(3..250)) { x.sample }
-  i   = rand(1..15)
-
-  while i < arr.size
-  arr[i] = 32
-  i += rand(2..16)
-  end
-
-  arr.pack("U*")
+  words = words_gen(plane_words)
+  digital_capitalize(words[0])
+  words.map { |a| a << 32 }.flatten[0..-2].push(46).pack("U*")
 end
 
 
